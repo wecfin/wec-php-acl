@@ -1,6 +1,6 @@
 {
     "name": "wec/acl",
-    "description": "wec-php-review",
+    "description": "wec-php-acl",
     "type": "library",
     "keywords": [
         "wec",
