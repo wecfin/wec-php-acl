@@ -11,16 +11,15 @@ class AclProcessTest extends TestCase
         $acls = [
             'admin' => [
                 'allow' => [
-                    'main' => ['fetchEmployee', 'listEmployee', 'createEmployee'],
-                    'order' => ['listCsOrder', 'listCpOrder', 'fetchOrder', 'createOrder'],
-                    'product' => ['createEmployee']
-                ]
+                    'fetchEmployee', 'listEmployee', 'createEmployee','updateEmployee'
+                ],
+                'forbid' => []
             ],
             'acctant' => [
                 'allow' => [
-                    'main' => ['fetchEmployee', 'listEmployee'],
-                    'order' => ['listCsOrder', 'listCpOrder', 'fetchOrder']
-                ]
+                    'fetchEmployee', 'listEmployee'
+                ],
+                'forbid' => []
             ]
         ];
         $aclProcess = new AclProcess($acls);
@@ -33,9 +32,7 @@ class AclProcessTest extends TestCase
         $aclProcess = new AclProcess([]);
         $role1 = 'admin';
         $resources1 = [
-            'main' => ['fetchEmployee', 'listEmployee', 'createEmployee'],
-            'order' => ['listCsOrder', 'listCpOrder', 'fetchOrder', 'createOrder'],
-            'product' => ['createEmployee']
+            'fetchEmployee', 'listEmployee', 'createEmployee', 'updateEmployee'
         ];
 
         $aclProcess->allow($role1, $resources1);
@@ -43,9 +40,7 @@ class AclProcessTest extends TestCase
         $dueResult1 = [
             'admin' => [
                 'allow' => [
-                    'main' => ['fetchEmployee', 'listEmployee', 'createEmployee'],
-                    'order' => ['listCsOrder', 'listCpOrder', 'fetchOrder', 'createOrder'],
-                    'product' => ['createEmployee']
+                    'fetchEmployee', 'listEmployee', 'createEmployee','updateEmployee'
                 ]
             ]
         ];
@@ -53,8 +48,7 @@ class AclProcessTest extends TestCase
 
         $role2 = 'acctant';
         $resources2 = [
-            'main' => ['fetchEmployee', 'listEmployee'],
-            'order' => ['listCsOrder', 'listCpOrder', 'fetchOrder']
+            'fetchEmployee'
         ];
 
         $aclProcess->allow($role2, $resources2);
@@ -62,19 +56,37 @@ class AclProcessTest extends TestCase
         $dueResult2 = [
             'admin' => [
                 'allow' => [
-                    'main' => ['fetchEmployee', 'listEmployee', 'createEmployee'],
-                    'order' => ['listCsOrder', 'listCpOrder', 'fetchOrder', 'createOrder'],
-                    'product' => ['createEmployee']
+                    'fetchEmployee', 'listEmployee', 'createEmployee','updateEmployee'
                 ]
             ],
             'acctant' => [
                 'allow' => [
-                    'main' => ['fetchEmployee', 'listEmployee'],
-                    'order' => ['listCsOrder', 'listCpOrder', 'fetchOrder']
+                    'fetchEmployee'
                 ]
             ]
         ];
         $this->assertEquals($dueResult2, $realResult2);
+
+        $role3 = 'acctant';
+        $resources3 = [
+            'listEmployee'
+        ];
+
+        $aclProcess->allow($role3, $resources3);
+        $realResult3 = $aclProcess->acl();
+        $dueResult3 = [
+            'admin' => [
+                'allow' => [
+                    'fetchEmployee', 'listEmployee', 'createEmployee','updateEmployee'
+                ]
+            ],
+            'acctant' => [
+                'allow' => [
+                    'fetchEmployee', 'listEmployee'
+                ]
+            ]
+        ];
+        $this->assertEquals($dueResult3, $realResult3);
     }
 
     public function testIsAllowed()
@@ -82,25 +94,23 @@ class AclProcessTest extends TestCase
         $acls = [
             'admin' => [
                 'allow' => [
-                    'main' => ['fetchEmployee', 'listEmployee', 'createEmployee'],
-                    'order' => ['listCsOrder', 'listCpOrder', 'fetchOrder', 'createOrder'],
-                    'product' => ['createEmployee']
+                    'fetchEmployee', 'listEmployee', 'createEmployee','updateEmployee'
                 ]
             ],
             'acctant' => [
                 'allow' => [
-                    'main' => ['fetchEmployee', 'listEmployee'],
-                    'order' => ['listCsOrder', 'listCpOrder', 'fetchOrder']
+                    'fetchEmployee', 'listEmployee'
                 ]
             ]
         ];
         $aclProcess = new AclProcess($acls);
 
-        $roles = ['admin'];
-        $app = 'main';
-        $resource = 'createEmployee';
+        $roles1 = ['admin'];
+        $resource1 = 'createEmployee';
+        $this->assertTrue($aclProcess->isAllowed($roles1, $resource1));
 
-        $this->assertFalse($aclProcess->isAllowed(['acctant'], 'order', 'createOrder'));
-        $this->assertTrue($aclProcess->isAllowed($roles, $app, $resource));
+        $roles2 = ['acctant'];
+        $resource2 = 'createEmployee';
+        $this->assertFalse($aclProcess->isAllowed($roles2, $resource2));
     }
 }

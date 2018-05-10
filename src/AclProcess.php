@@ -17,47 +17,33 @@ class AclProcess
 
     public function allow(string $role, array $resources): void
     {
-        if (!isset($this->acls[$role])) {
+        $acls = $this->acl();
+
+        if (!isset($acls[$role]) || !isset($acls[$role]['allow'])) {
             $this->acls[$role]['allow'] = $resources;
             return;
         }
 
-        foreach ($resources as $app => $resourceArr) {
-            if (!isset($this->acls[$role]['allow'][$app])) {
-                $this->acls[$role]['allow'][$app] = $resourceArr;
-                continue;
-            }
-
-            $hadResourceArr = $this->acls[$role]['allow'][$app];
-            $mergedResourceArr = array_merge($hadResourceArr, $resourceArr);
-            $uniqueResourceArr = array_keys(array_flip($mergedResourceArr));
-            $this->acls[$role]['allow'][$app] = $uniqueResourceArr;
-        }
+        $oldResources = $acls[$role]['allow'];
+        $newResources =  array_keys(array_flip(array_merge($oldResources, $resources)));
+        $this->acls[$role]['allow'] = $newResources;
     }
 
-    // todo forbid like allow
+    // todo forbid
 
-    public function isAllowed(array $roles, string $app, string $resource): bool
+    public function isAllowed(array $roles, string $resource): bool
     {
-        $mergedAcls = $this->mergeAclsByRolesAndApp($this->acl(), $roles, $app);
-
-        return in_array($resource, $mergedAcls);
-    }
-
-    public function mergeAclsByRolesAndApp(array $acls, array $roles, string $app): array
-    {
-        $mergedAcls = [];
+        $acls = $this->acl();
 
         foreach ($roles as $role) {
-            if (!isset($acls[$role])) {
+            if (!isset($acls[$role]) || !isset($acls[$role]['allow'])) {
                 continue;
             }
-            if (!isset($acls[$role]['allow'][$app])) {
-                continue;
+            if (in_array($resource, $acls[$role]['allow'])) {
+                return true;
             }
-            $mergedAcls = array_merge($acls[$role]['allow'][$app], $mergedAcls);
         }
 
-        return array_keys(array_flip($mergedAcls));
+        return false;
     }
 }
