@@ -10,16 +10,10 @@ class AclProcessTest extends TestCase
     {
         $acls = [
             'admin' => [
-                'allow' => [
-                    'fetchEmployee', 'listEmployee', 'createEmployee','updateEmployee'
-                ],
-                'forbid' => []
+                'fetchEmployee', 'listEmployee', 'createEmployee','updateEmployee'
             ],
             'acctant' => [
-                'allow' => [
-                    'fetchEmployee', 'listEmployee'
-                ],
-                'forbid' => []
+                'fetchEmployee', 'listEmployee'
             ]
         ];
         $aclProcess = new AclProcess($acls);
@@ -39,9 +33,7 @@ class AclProcessTest extends TestCase
         $realResult1 = $aclProcess->acl();
         $dueResult1 = [
             'admin' => [
-                'allow' => [
-                    'fetchEmployee', 'listEmployee', 'createEmployee','updateEmployee'
-                ]
+                'fetchEmployee', 'listEmployee', 'createEmployee','updateEmployee'
             ]
         ];
         $this->assertEquals($dueResult1, $realResult1);
@@ -55,14 +47,10 @@ class AclProcessTest extends TestCase
         $realResult2 = $aclProcess->acl();
         $dueResult2 = [
             'admin' => [
-                'allow' => [
-                    'fetchEmployee', 'listEmployee', 'createEmployee','updateEmployee'
-                ]
+                'fetchEmployee', 'listEmployee', 'createEmployee','updateEmployee'
             ],
             'acctant' => [
-                'allow' => [
-                    'fetchEmployee'
-                ]
+                'fetchEmployee'
             ]
         ];
         $this->assertEquals($dueResult2, $realResult2);
@@ -76,31 +64,51 @@ class AclProcessTest extends TestCase
         $realResult3 = $aclProcess->acl();
         $dueResult3 = [
             'admin' => [
-                'allow' => [
-                    'fetchEmployee', 'listEmployee', 'createEmployee','updateEmployee'
-                ]
+                'fetchEmployee', 'listEmployee', 'createEmployee','updateEmployee'  
             ],
             'acctant' => [
-                'allow' => [
-                    'fetchEmployee', 'listEmployee'
-                ]
+                'fetchEmployee', 'listEmployee'
             ]
         ];
         $this->assertEquals($dueResult3, $realResult3);
+    }
+
+    public function testForbid()
+    {
+
+        $acls = [
+            'admin' => [
+                'fetchEmployee', 'listEmployee', 'createEmployee','updateEmployee'
+            ],
+            'acctant' => [
+                'fetchEmployee', 'listEmployee'
+            ]
+        ];
+        $aclProcess = new AclProcess($acls);
+        $role = 'acctant';
+        $resources = ['listEmployee', 'createEmployee'];
+
+        $aclProcess->forbid($role, $resources);
+        $realResult = $aclProcess->acl();
+        $dueResult = [
+            'admin' => [
+                'fetchEmployee', 'listEmployee', 'createEmployee','updateEmployee'
+            ],
+            'acctant' => [
+                'fetchEmployee'
+            ]
+        ];
+        $this->assertEquals($dueResult, $realResult);
     }
 
     public function testIsAllowed()
     {
         $acls = [
             'admin' => [
-                'allow' => [
-                    'fetchEmployee', 'listEmployee', 'createEmployee','updateEmployee'
-                ]
+                'fetchEmployee', 'listEmployee', 'createEmployee','updateEmployee'
             ],
             'acctant' => [
-                'allow' => [
-                    'fetchEmployee', 'listEmployee'
-                ]
+                'fetchEmployee', 'listEmployee'
             ]
         ];
         $aclProcess = new AclProcess($acls);
