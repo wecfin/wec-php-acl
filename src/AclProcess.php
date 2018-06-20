@@ -3,57 +3,109 @@ namespace Wec\Acl;
 
 class AclProcess
 {
-    protected $acls;
+    private $acls = [];
 
-    public function __construct(array $acls = [])
+    public function __construct($acls)
     {
-        $this->acls = $acls;
-    }
-
-    public function acl(): array
-    {
-        return $this->acls;
-    }
-
-    public function allow(string $role, array $resources): void
-    {
-        $acls = $this->acl();
-
-        if (!isset($acls[$role])) {
-            $this->acls[$role] = $resources;
-            return;
+        $companyIds = [];
+        foreach ($acls as $acl) {
+            $companyIds[$acl->companyId] = 1;
+            $this->allow(
+                $acl->role->roleId,
+                $acl->app->appId,
+                json_decode($acl->allow)
+            );
+            $this->forbid(
+                $acl->role->roleId,
+                $acl->app->appId,
+                json_decode($acl->forbid)
+            );
         }
 
-        $oldResources = $acls[$role];
-        $newResources =  array_keys(array_flip(array_merge($oldResources, $resources)));
-        $this->acls[$role] = $newResources;
+        if (count($companyIds) > 1) {
+            throw new \Exception('has more than one company');
+        }
     }
 
-    // todo forbid
-    public function forbid(string $role, array $resources): void
+    protected function preSetAcls($roleId, $appId): void
     {
-        $acls = $this->acl();
+        if (!isset($this->acls[$roleId])) {
+            $this->acls[$roleId] = [];
+        }
+        if (!isset($this->acls[$roleId][$appId])) {
+            $this->acls[$roleId][$appId] = [];
+        }
+        if (!isset($this->acls[$roleId][$appId]['allow'])) {
+            $this->acls[$roleId][$appId]['allow'] = [];
+        }
+        if (!isset($this->acls[$roleId][$appId]['forbid'])) {
+            $this->acls[$roleId][$appId]['forbid'] = [];
+        }
+    }
 
-        if (!isset($acls[$role])) {
-            return;
+    public function allow(string $roleId, string $appId, array $resources): void
+    {
+        $this->preSetAcls($roleId, $appId);
+        $this->acls[$roleId][$appId]['allow'] = array_merge(
+            $this->acls[$roleId][$appId]['allow'],
+            array_flip($resources)
+        );
+    }
+
+    public function forbid(string $roleId, string $appId, array $resources): void
+    {
+        $this->preSetAcls($roleId, $appId);
+        $this->acls[$roleId][$appId]['forbid'] = array_merge(
+            $this->acls[$roleId][$appId]['forbid'],
+            array_flip($resources)
+        );
+    }
+
+    public function isAllowed(array $roleIds, string $appId, string $resource): bool
+    {
+        if ($this->isForbided($roleIds, $appId, $resource)) {
+            return false;
         }
 
-        $this->acls[$role] = array_diff($acls[$role], $resources);
-    }
-
-    public function isAllowed(array $roles, string $resource): bool
-    {
-        $acls = $this->acl();
-
-        foreach ($roles as $role) {
-            if (!isset($acls[$role])) {
+        foreach ($roleIds as $roleId) {
+            if (!isset($this->acls[$roleId])) {
                 continue;
             }
-            if (in_array($resource, $acls[$role])) {
+            if (!isset($this->acls[$roleId][$appId])) {
+                continue;
+            }
+            if (!isset($this->acls[$roleId][$appId]['allow'])) {
+                continue;
+            }
+            if (array_key_exists(
+                $resource,
+                $this->acls[$roleId][$appId]['allow']
+            )) {
                 return true;
             }
         }
+        return false;
+    }
 
+    public function isForbided(array $roleIds, string $appId, string $resource): bool
+    {
+        foreach ($roleIds as $roleId) {
+            if (!isset($this->acls[$roleId])) {
+                continue;
+            }
+            if (!isset($this->acls[$roleId][$appId])) {
+                continue;
+            }
+            if (!isset($this->acls[$roleId][$appId]['forbid'])) {
+                continue;
+            }
+            if (array_key_exists(
+                $resource,
+                $this->acls[$roleId][$appId]['forbid']
+            )) {
+                return true;
+            }
+        }
         return false;
     }
 }
