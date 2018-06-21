@@ -41,10 +41,10 @@ class AclRepo
         if (!$companyId = $acl->companyId) {
             throw new \Exception('companyId cannot be empty');
         }
-        if (!$roleId = $acl->role->roleId) {
+        if (!$roleId = $acl->roleId) {
             throw new \Exception('roleId cannot be empty');
         }
-        if (!$appId = $acl->app->appId) {
+        if (!$appId = $acl->appId) {
             throw new \Exception('appId cannot be empty');
         }
 
@@ -153,27 +153,15 @@ class AclRepo
     {
         $ssb = $this->cnn->ssb()
             ->select(
-                'ca.companyId companyId',
-                'ca.allow allow',
-                'ca.forbid forbid',
-                'ca.created created',
-                'ca.changed changed',
-                'ca.appId app_appId',
-                'ca.roleId role_roleId',
-                'hr.roleName role_roleName',
-                'a.appName app_appName',
-                'a.appId app_appId',
-                'a.appCode app_appCode'
+                'ca.companyId',
+                'ca.allow',
+                'ca.forbid',
+                'ca.created',
+                'ca.changed',
+                'ca.appId',
+                'ca.roleId'
             )
             ->from('company_acl ca')
-                ->leftJoin('hr_role hr')
-                ->onCond()
-                    ->expect('hr.roleId')->equal()->expr('ca.roleId')
-                ->endJoin()
-                ->leftJoin('open_app a')
-                ->onCond()
-                    ->expect('a.appId')->equal()->expr('ca.appId')
-                ->endJoin()
             ->end();
         return $ssb;
     }
