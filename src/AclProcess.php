@@ -11,13 +11,13 @@ class AclProcess
         foreach ($acls as $acl) {
             $companyIds[$acl->companyId] = 1;
             $this->allow(
-                $acl->role->roleId,
-                $acl->app->appId,
+                $acl->roleId,
+                $acl->appId,
                 json_decode($acl->allow)
             );
             $this->forbid(
-                $acl->role->roleId,
-                $acl->app->appId,
+                $acl->roleId,
+                $acl->appId,
                 json_decode($acl->forbid)
             );
         }
