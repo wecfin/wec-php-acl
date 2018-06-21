@@ -163,7 +163,7 @@ class AclRepo
                 'hr.roleName role_roleName',
                 'a.appName app_appName',
                 'a.appId app_appId',
-                'a.appCode app_code'
+                'a.appCode app_appCode'
             )
             ->from('company_acl ca')
                 ->leftJoin('hr_role hr')
