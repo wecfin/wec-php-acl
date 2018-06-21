@@ -13,7 +13,10 @@
         }
     ],
     "require": {
-        "php": ">=7.1.0"
+        "php": ">=7.1.0",
+        "gap/dto": "^1.0",
+        "gap/db": "^2.1",
+        "gap/open-dto": "^1.2"
     },
     "require-dev": {
         "phpunit/phpunit": "^7.1",
