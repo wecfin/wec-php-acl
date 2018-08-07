@@ -169,10 +169,10 @@ class AclRepo
     private function deleteIfExisted($companyId, $roleId, $appId): void
     {
         $opts = [
-                'companyId' => $companyId,
-                'roleId' => $roleId,
-                'appId' => $appId
-            ];
+            'companyId' => $companyId,
+            'roleId' => $roleId,
+            'appId' => $appId
+        ];
         $existed = $this->fetch($opts);
         if ($existed) {
             $this->delete($opts);

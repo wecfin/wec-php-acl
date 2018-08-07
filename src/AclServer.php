@@ -34,7 +34,9 @@ class AclServer
             return $cachedAcls;
         }
 
-        $aclList = $this->getRepo()->listByCompany($companyId);
+        $aclList = $this->getRepo()
+            ->listByCompany($companyId)
+            ->limit(10000);
         $acls = [];
         foreach ($aclList as $acl) {
             $acls[] = $acl;
